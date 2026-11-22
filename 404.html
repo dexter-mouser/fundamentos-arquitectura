@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Página no encontrada</title>
+<style>
+/* Tokens: mismos colores que el resumen */
+:root {
+  --bg: #f9fafc;
+  --fg: #1c2331;
+  --muted: #5b6577;
+  --accent: #3a5a9c;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #11151c; --fg: #e2e7ee; --muted: #98a2b3; --accent: #93b2ec; }
+}
+
+/* CSS general */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.65;
+}
+.pagina { min-width: 320px; max-width: 46rem; margin: 0 auto; padding: 4rem 16px; }
+h1 { font-size: 1.8rem; font-weight: 600; margin: 0 0 .75rem; }
+p { color: var(--muted); margin: 0 0 1.25rem; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main class="pagina">
+  <h1>Página no encontrada</h1>
+  <p>La dirección no existe o cambió.</p>
+  <a href="/fundamentos-arquitectura/">Volver al resumen</a>
+</main>
+</body>
+</html>

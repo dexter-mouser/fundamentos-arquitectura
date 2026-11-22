@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Resumen en español, capítulo por capítulo, de Fundamentals of Software Architecture (2.ª edición), con ejemplos y una lista de chequeo.">
+<title>Fundamentos de arquitectura por capítulos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Tokens: una columna de lectura, índice arriba, capítulos por partes y lista de chequeo al final */
+:root {
+  --bg: #f9fafc;
+  --fg: #1c2331;
+  --muted: #5b6577;
+  --line: #dce1ea;
+  --accent: #3a5a9c;
+  --chip: #e8edf7;
+  --code-bg: #f0f3f8;
+  --mal: #a3423a;
+  --bien: #2f6f5e;
+  --riesgo-bajo: #d9efe3;
+  --riesgo-medio: #f6e7c4;
+  --riesgo-alto: #f4d2cf;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light dark;
+  accent-color: var(--accent);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11151c; --fg: #e2e7ee; --muted: #98a2b3; --line: #2a313d;
+    --accent: #93b2ec; --chip: #1c2436; --code-bg: #182029;
+    --mal: #e48b82; --bien: #7cc4ad;
+    --riesgo-bajo: #1d3229; --riesgo-medio: #3a3020; --riesgo-alto: #42241f;
+  }
+}
+
+/* CSS general */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.pagina {
+  min-width: 320px;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 3rem 16px 4rem;
+}
+h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+h1 { font-size: clamp(1.6rem, 1.2rem + 2vw, 2.1rem); font-weight: 600; margin: 0 0 .5rem; }
+h2 { font-size: 1.45rem; font-weight: 600; margin: 0; }
+h3 { font-size: 1.25rem; font-weight: 600; margin: 0; }
+h3.grupo-titulo { font-size: 1rem; margin: 1.25rem 0 .5rem; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Cabecera */
+.datos { color: var(--muted); margin: 0 0 1rem; }
+.nota {
+  font-size: .9rem;
+  color: var(--muted);
+  border-left: 3px solid var(--line);
+  padding-left: .75rem;
+  margin: 0;
+}
+.nota + .nota { margin-top: .5rem; }
+
+/* Índice */
+.indice {
+  margin: 2.5rem 0 3rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding-block: 1rem;
+}
+.indice-parte {
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: .9rem 0 .3rem;
+}
+.indice-parte:first-child { margin-top: 0; }
+.indice ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 2rem; }
+.indice li { break-inside: avoid; padding: .1rem 0; font-size: .95rem; }
+.indice a { text-decoration: none; color: var(--fg); }
+.indice a:hover { color: var(--accent); }
+.indice .num { font-family: var(--mono); color: var(--muted); font-size: .8rem; display: inline-block; width: 2.2rem; }
+@media (max-width: 768px) { .indice ol { columns: 1; } }
+
+/* Partes y capítulos */
+.parte { margin-top: 4rem; }
+.parte:first-of-type { margin-top: 0; }
+.parte-titulo { padding-bottom: .5rem; border-bottom: 2px solid var(--fg); margin-bottom: 2.5rem; }
+.capitulos { display: grid; gap: 3.5rem; }
+.capitulo { scroll-margin-top: 1rem; min-width: 0; }
+.etiqueta {
+  font-family: var(--mono);
+  font-size: .75rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 .25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+.nuevo {
+  font-size: .68rem;
+  background: var(--chip);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: .05rem .5rem;
+  letter-spacing: .04em;
+}
+.original { font-family: var(--mono); font-size: .8rem; color: var(--muted); margin: .15rem 0 .9rem; }
+.idea { margin: 0 0 1rem; }
+.reglas { margin: 0; padding-left: 1.2rem; display: grid; gap: .55rem; }
+.reglas strong { font-weight: 600; }
+code {
+  font-family: var(--mono);
+  font-size: .85em;
+  background: var(--chip);
+  padding: .05em .35em;
+  border-radius: 4px;
+}
+
+/* Ejemplos */
+.ejemplo { display: grid; gap: .6rem; margin-top: 1.25rem; min-width: 0; }
+.bloque { min-width: 0; }
+.bloque-titulo {
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 .25rem;
+}
+.bloque.antes .bloque-titulo { color: var(--mal); }
+.bloque.despues .bloque-titulo { color: var(--bien); }
+pre {
+  margin: 0;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: 6px;
+  padding: .8rem 1rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+.bloque.antes pre { border-left-color: var(--mal); }
+.bloque.despues pre { border-left-color: var(--bien); }
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* Tablas */
+.tabla-envoltura { overflow-x: auto; margin-top: 1.25rem; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { border: 1px solid var(--line); padding: .5rem .7rem; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+caption { text-align: left; font-size: .85rem; color: var(--muted); padding-bottom: .4rem; }
+.matriz td, .matriz th { text-align: center; font-variant-numeric: tabular-nums; }
+.matriz th[scope="row"] { text-align: left; }
+.bajo { background: var(--riesgo-bajo); }
+.medio { background: var(--riesgo-medio); }
+.alto { background: var(--riesgo-alto); }
+
+/* Lista de chequeo */
+.chequeo { margin-top: 4rem; border-top: 1px solid var(--line); padding-top: 2rem; scroll-margin-top: 1rem; }
+.chequeo-cabecera { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: baseline; justify-content: space-between; }
+.progreso { font-family: var(--mono); font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.grupo label { display: flex; gap: .6rem; align-items: flex-start; cursor: pointer; }
+.grupo input { margin-top: .35rem; flex: none; width: 1rem; height: 1rem; }
+.grupo input:checked + span { color: var(--muted); text-decoration: line-through; }
+.boton {
+  font: inherit;
+  font-size: .85rem;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .35rem .8rem;
+  cursor: pointer;
+}
+.boton:hover { border-color: var(--accent); }
+.boton:active { background: var(--chip); }
+.boton:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Cierre */
+.cierre { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1.5rem; }
+.cierre p { margin: 0 0 .75rem; }
+</style>
+</head>
+<body>
+<main class="pagina">
+  <header>
+    <h1>Fundamentos de arquitectura por capítulos</h1>
+    <p class="datos"><em>Fundamentals of Software Architecture</em>, 2.ª edición · Mark Richards y Neal Ford · O'Reilly, 2025</p>
+    <p class="nota">El índice sigue la 2.ª edición publicada en la web de Neal Ford. Los capítulos marcados como nuevos se resumen a partir de lo que se sabe de ellos públicamente, así que pueden no coincidir en todos los detalles.</p>
+    <p class="nota">Los ejemplos son propios y están en JavaScript. Al final hay una lista de chequeo para revisar un diseño.</p>
+  </header>
+
+  <nav class="indice" aria-label="Índice de capítulos">
+    <p class="indice-parte">Introducción</p>
+    <ol>
+      <li><a href="#c1"><span class="num">01</span>Introducción</a></li>
+    </ol>
+    <p class="indice-parte">Parte I · Fundamentos</p>
+    <ol>
+      <li><a href="#c2"><span class="num">02</span>Pensamiento arquitectónico</a></li>
+      <li><a href="#c3"><span class="num">03</span>Modularidad</a></li>
+      <li><a href="#c4"><span class="num">04</span>Características definidas</a></li>
+      <li><a href="#c5"><span class="num">05</span>Identificar características</a></li>
+      <li><a href="#c6"><span class="num">06</span>Medir y gobernar características</a></li>
+      <li><a href="#c7"><span class="num">07</span>Alcance de las características</a></li>
+      <li><a href="#c8"><span class="num">08</span>Pensar en componentes</a></li>
+    </ol>
+    <p class="indice-parte">Parte II · Estilos de arquitectura</p>
+    <ol>
+      <li><a href="#c9"><span class="num">09</span>Fundamentos de los estilos</a></li>
+      <li><a href="#c10"><span class="num">10</span>Arquitectura en capas</a></li>
+      <li><a href="#c11"><span class="num">11</span>Monolito modular</a></li>
+      <li><a href="#c12"><span class="num">12</span>Tubería</a></li>
+      <li><a href="#c13"><span class="num">13</span>Microkernel</a></li>
+      <li><a href="#c14"><span class="num">14</span>Basada en servicios</a></li>
+      <li><a href="#c15"><span class="num">15</span>Dirigida por eventos</a></li>
+      <li><a href="#c16"><span class="num">16</span>Basada en espacio</a></li>
+      <li><a href="#c17"><span class="num">17</span>SOA con orquestación</a></li>
+      <li><a href="#c18"><span class="num">18</span>Microservicios</a></li>
+      <li><a href="#c19"><span class="num">19</span>Elegir el estilo adecuado</a></li>
+      <li><a href="#c20"><span class="num">20</span>Patrones de arquitectura</a></li>
+    </ol>
+    <p class="indice-parte">Parte III · Técnicas y habilidades blandas</p>
+    <ol>
+      <li><a href="#c21"><span class="num">21</span>Decisiones de arquitectura</a></li>
+      <li><a href="#c22"><span class="num">22</span>Analizar el riesgo</a></li>
+      <li><a href="#c23"><span class="num">23</span>Diagramar la arquitectura</a></li>
+      <li><a href="#c24"><span class="num">24</span>Equipos eficaces</a></li>
+      <li><a href="#c25"><span class="num">25</span>Negociación y liderazgo</a></li>
+      <li><a href="#c26"><span class="num">26</span>Intersecciones de la arquitectura</a></li>
+      <li><a href="#c27"><span class="num">27</span>Las leyes, revisadas</a></li>
+      <li><a href="#chequeo"><span class="num">✓</span>Lista de chequeo</a></li>
+    </ol>
+  </nav>
+
+  <!-- Introducción -->
+  <section class="parte" aria-labelledby="parte-intro">
+    <h2 class="parte-titulo" id="parte-intro">Introducción</h2>
+    <div class="capitulos">
+      <article class="capitulo" id="c1">
+        <p class="etiqueta">Capítulo 1</p>
+        <h3>Introducción</h3>
+        <p class="original">Introduction</p>
+        <p class="idea">La arquitectura de software es difícil de definir porque cambia con la tecnología y con la forma de trabajar. El libro propone verla en cuatro dimensiones y explica qué se espera de quien la ejerce.</p>
+        <ul class="reglas">
+          <li><strong>Cuatro dimensiones.</strong> La estructura (el estilo, como capas o microservicios), las características que el sistema debe cumplir (rendimiento, disponibilidad…), las decisiones (reglas firmes sobre cómo se construye) y los principios de diseño (guías flexibles).</li>
+          <li><strong>Qué se espera de un arquitecto.</strong> Tomar decisiones y no solo elegir tecnologías, revisar la arquitectura de forma continua, estar al día con las tendencias, asegurar que se cumplan las decisiones, conocer varias tecnologías y el negocio, tener habilidades interpersonales y saber moverse en la política de la empresa.</li>
+          <li><strong>La arquitectura se cruza con todo.</strong> Las prácticas de ingeniería, las operaciones, los datos y la organización de los equipos afectan a la arquitectura, y viceversa.</li>
+          <li><strong>Primera ley.</strong> Todo en arquitectura de software es un compromiso: si crees que encontraste algo sin desventajas, aún no las has visto.</li>
+          <li><strong>Segunda ley.</strong> El porqué importa más que el cómo. Un diagrama muestra cómo está hecho un sistema, pero sin las razones nadie podrá mantener la decisión.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- Parte I -->
+  <section class="parte" aria-labelledby="parte-1">
+    <h2 class="parte-titulo" id="parte-1">Parte I · Fundamentos</h2>
+    <div class="capitulos">
+
+      <article class="capitulo" id="c2">
+        <p class="etiqueta">Capítulo 2</p>
+        <h3>Pensamiento arquitectónico</h3>
+        <p class="original">Architectural Thinking</p>
+        <p class="idea">Pensar como arquitecto es mirar el sistema completo: entender el negocio, comparar opciones por sus compromisos y saber cuándo una decisión es de arquitectura y cuándo de diseño.</p>
+        <ul class="reglas">
+          <li><strong>Arquitectura y diseño son un espectro.</strong> Cuanto más estratégica, difícil de cambiar y con más gente implicada sea una decisión, más es de arquitectura. Lo táctico, local y fácil de cambiar es diseño.</li>
+          <li><strong>Amplitud antes que profundidad.</strong> Un desarrollador profundiza en pocas tecnologías; un arquitecto necesita conocer muchas lo suficiente para saber cuándo sirve cada una. Lo valioso es reducir lo que «no sabes que no sabes».</li>
+          <li><strong>Analiza compromisos, no busques la mejor opción.</strong> Por ejemplo, publicar en un tema (topic) facilita agregar consumidores, pero da menos control sobre quién lee los datos que una cola por consumidor. No hay respuesta correcta, solo la menos mala para el contexto.</li>
+          <li><strong>Entiende el negocio.</strong> Las características que importan salen de lo que el negocio necesita, no de las preferencias técnicas.</li>
+          <li><strong>Sigue programando, sin ser un cuello de botella.</strong> Evita tomar el código crítico del proyecto; haz pruebas de concepto, corrige errores, automatiza y revisa código. Así mantienes la mano y el respeto del equipo.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c3">
+        <p class="etiqueta">Capítulo 3</p>
+        <h3>Modularidad</h3>
+        <p class="original">Modularity</p>
+        <p class="idea">Separar un sistema en módulos es la base de cualquier arquitectura. El capítulo da herramientas para medir si esa separación es buena: cohesión, acoplamiento y connascencia.</p>
+        <ul class="reglas">
+          <li><strong>Cohesión.</strong> Mide cuánto pertenecen entre sí las partes de un módulo. La mejor es la funcional (todo sirve a una misma función); la peor, la casual (cosas juntas sin relación).</li>
+          <li><strong>Acoplamiento.</strong> El aferente cuenta quién depende de ti; el eferente, de quién dependes tú. Con eso se calcula la inestabilidad: un módulo muy usado y que depende de poco debe ser estable y abstracto.</li>
+          <li><strong>Distancia de la secuencia principal.</strong> Relaciona abstracción e inestabilidad. Un módulo concreto y muy usado cae en la «zona de dolor» (difícil de cambiar); uno abstracto y poco usado, en la «zona de inutilidad».</li>
+          <li><strong>Connascencia.</strong> Dos piezas son connascentes si cambiar una obliga a cambiar la otra. Las formas estáticas (nombre, tipo, significado, posición, algoritmo) se ven en el código; las dinámicas (orden de ejecución, tiempo, valores, identidad) solo al ejecutar.</li>
+          <li><strong>Reglas de la connascencia.</strong> Convierte las formas fuertes en débiles y, cuanto más lejos estén dos piezas, más débil debe ser su vínculo. Lo que cruza fronteras entre módulos debe depender lo menos posible.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque antes">
+            <p class="bloque-titulo">Connascencia de posición (fuerte)</p>
+<pre><code>// Hay que recordar el orden exacto de los argumentos
+crearUsuario('Ana', 'ana@correo.com', true, 3);</code></pre>
+          </div>
+          <div class="bloque despues">
+            <p class="bloque-titulo">Connascencia de nombre (débil)</p>
+<pre><code>// Solo hay que coincidir en los nombres
+crearUsuario({ nombre: 'Ana', correo: 'ana@correo.com', esAdmin: true, nivel: 3 });</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c4">
+        <p class="etiqueta">Capítulo 4</p>
+        <h3>Características de arquitectura definidas</h3>
+        <p class="original">Architectural Characteristics Defined</p>
+        <p class="idea">Las características de arquitectura (los «-ilities» en inglés) son lo que el sistema debe cumplir además de su funcionalidad: rendimiento, escalabilidad, seguridad… Definen la estructura tanto como los requisitos del negocio.</p>
+        <ul class="reglas">
+          <li><strong>Tres criterios.</strong> Una característica de arquitectura no trata del dominio, influye en la estructura del sistema y es importante para que la aplicación tenga éxito.</li>
+          <li><strong>Explícitas e implícitas.</strong> Algunas aparecen en los requisitos; otras nadie las menciona pero se dan por hechas, como la disponibilidad o la seguridad.</li>
+          <li><strong>Tres familias.</strong> Operativas (disponibilidad, rendimiento, escalabilidad, recuperación), estructurales (mantenibilidad, extensibilidad, portabilidad, configurabilidad) y transversales (seguridad, accesibilidad, privacidad, requisitos legales).</li>
+          <li><strong>No se puede tener todo.</strong> Cada característica cuesta y complica el diseño, y muchas chocan entre sí (más seguridad suele significar menos rendimiento). Busca la arquitectura menos mala, no la mejor.</li>
+          <li><strong>Elige pocas.</strong> Una arquitectura que intenta soportar todas las características termina siendo genérica y no sirve bien para ninguna.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c5">
+        <p class="etiqueta">Capítulo 5</p>
+        <h3>Identificar características de arquitectura</h3>
+        <p class="original">Identifying Architectural Characteristics</p>
+        <p class="idea">Las características salen de tres fuentes: las preocupaciones del negocio, los requisitos y el conocimiento implícito del dominio. El trabajo del arquitecto es traducir lo que dice el negocio a características medibles.</p>
+        <ul class="reglas">
+          <li><strong>Traduce el idioma del negocio.</strong> Nadie del negocio pedirá «escalabilidad»; dirá «queremos crecer en otros países». Ese es tu dato de partida.</li>
+          <li><strong>Lee entre líneas.</strong> «Los usuarios se conectan todos a la vez a las 9:00» implica elasticidad aunque nadie lo diga.</li>
+          <li><strong>Prioriza con el negocio.</strong> Haz una lista corta (unas siete) y pide que se elijan las tres más importantes. Ordenarlas todas lleva a discusiones sin fin.</li>
+          <li><strong>Practica con katas.</strong> Las katas de arquitectura son enunciados de sistemas ficticios para identificar características y proponer un diseño en equipo.</li>
+        </ul>
+        <div class="tabla-envoltura">
+          <table>
+            <caption>Ejemplo de traducción de preocupaciones del negocio</caption>
+            <thead>
+              <tr><th scope="col">El negocio dice</th><th scope="col">Características probables</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Queremos lanzar antes que la competencia</td><td>Agilidad, facilidad de prueba, facilidad de despliegue</td></tr>
+              <tr><td>Los clientes se quejan de que la app falla</td><td>Disponibilidad, tolerancia a fallos, rendimiento</td></tr>
+              <tr><td>Vamos a comprar otras empresas</td><td>Interoperabilidad, escalabilidad, adaptabilidad</td></tr>
+              <tr><td>Tenemos poco presupuesto y poco tiempo</td><td>Simplicidad, viabilidad</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c6">
+        <p class="etiqueta">Capítulo 6</p>
+        <h3>Medir y gobernar las características</h3>
+        <p class="original">Measuring and Governing Architecture Characteristics</p>
+        <p class="idea">Una característica que no se mide es solo un deseo. Para cada una hay que definir cómo medirla y cómo comprobar, de forma automática si es posible, que el sistema la sigue cumpliendo.</p>
+        <ul class="reglas">
+          <li><strong>Medidas operativas.</strong> Tiempos de respuesta (promedio y percentiles, no solo el máximo), disponibilidad, errores por minuto.</li>
+          <li><strong>Medidas estructurales.</strong> Complejidad ciclomática, acoplamiento entre módulos, dependencias circulares.</li>
+          <li><strong>Medidas de proceso.</strong> Cobertura de pruebas, frecuencia y tasa de éxito de los despliegues.</li>
+          <li><strong>Funciones de aptitud (fitness functions).</strong> Cualquier mecanismo que evalúe de forma objetiva una característica: una prueba de dependencias, un umbral de rendimiento en la integración continua o un experimento de caos que apaga servidores.</li>
+          <li><strong>Gobernar es automatizar.</strong> Las revisiones manuales no escalan. Si una regla importa, conviértela en una prueba que falle cuando se rompa.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque">
+            <p class="bloque-titulo">Función de aptitud con dependency-cruiser</p>
+<pre><code>// .dependency-cruiser.js: la integración continua falla si se rompe una capa
+module.exports = {
+  forbidden: [
+    {
+      name: 'presentacion-no-usa-persistencia',
+      severity: 'error',
+      from: { path: '^src/presentacion' },
+      to: { path: '^src/persistencia' }
+    },
+    {
+      name: 'sin-dependencias-circulares',
+      severity: 'error',
+      from: {},
+      to: { circular: true }
+    }
+  ]
+};</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c7">
+        <p class="etiqueta">Capítulo 7</p>
+        <h3>El alcance de las características</h3>
+        <p class="original">The Scope of Architectural Characteristics</p>
+        <p class="idea">No todas las partes de un sistema necesitan las mismas características. El «cuanto de arquitectura» (architecture quantum) define el alcance: la unidad mínima sobre la que se pueden fijar características propias.</p>
+        <ul class="reglas">
+          <li><strong>Qué es un cuanto.</strong> Una parte del sistema que se despliega por separado, con alta cohesión funcional y que se comunica de forma síncrona por dentro.</li>
+          <li><strong>La base de datos manda.</strong> Si todos los servicios comparten una base de datos, forman un solo cuanto aunque se desplieguen por separado: comparten sus características.</li>
+          <li><strong>Lo síncrono acopla.</strong> Si un servicio llama a otro y espera la respuesta, quedan atados: el lento o caído arrastra al otro. La comunicación asíncrona separa los cuantos.</li>
+          <li><strong>Un cuanto o varios.</strong> Si distintas partes necesitan características muy diferentes (una, alta escalabilidad; otra, máxima seguridad), es una señal fuerte a favor de una arquitectura distribuida.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c8">
+        <p class="etiqueta">Capítulo 8</p>
+        <h3>Pensar en componentes</h3>
+        <p class="original">Component-Based Thinking</p>
+        <p class="idea">Los componentes son los bloques con los que se construye la arquitectura: agrupaciones de código con una responsabilidad clara, como un paquete, un módulo o un servicio. Identificarlos bien es una de las tareas principales del arquitecto.</p>
+        <ul class="reglas">
+          <li><strong>Partición técnica o por dominio.</strong> Puedes dividir el sistema por capas técnicas (controladores, servicios, datos) o por áreas del negocio (pedidos, clientes, pagos). La segunda refleja mejor cómo cambia el negocio.</li>
+          <li><strong>Ley de Conway.</strong> Los sistemas imitan la estructura de comunicación de la organización. Si quieres una arquitectura por dominios, organiza los equipos por dominios.</li>
+          <li><strong>Flujo para identificar componentes.</strong> Propón componentes iniciales, asígnales requisitos, analiza sus responsabilidades y características, y reestructura. Se repite muchas veces.</li>
+          <li><strong>Evita la trampa de las entidades.</strong> Crear un componente por tabla («GestorDeClientes», «GestorDeProductos») produce una base de datos con interfaz, no una arquitectura.</li>
+          <li><strong>Mejores puntos de partida.</strong> Actores y acciones, event storming o los flujos de trabajo del negocio.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque">
+            <p class="bloque-titulo">Partición técnica</p>
+<pre><code>src/
+  controladores/   pedidos.js   clientes.js
+  servicios/       pedidos.js   clientes.js
+  repositorios/    pedidos.js   clientes.js</code></pre>
+          </div>
+          <div class="bloque">
+            <p class="bloque-titulo">Partición por dominio</p>
+<pre><code>src/
+  pedidos/    controlador.js   servicio.js   repositorio.js
+  clientes/   controlador.js   servicio.js   repositorio.js</code></pre>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Parte II -->
+  <section class="parte" aria-labelledby="parte-2">
+    <h2 class="parte-titulo" id="parte-2">Parte II · Estilos de arquitectura</h2>
+    <div class="capitulos">
+
+      <article class="capitulo" id="c9">
+        <p class="etiqueta">Capítulo 9</p>
+        <h3>Fundamentos de los estilos</h3>
+        <p class="original">Foundations</p>
+        <p class="idea">Un estilo de arquitectura describe la forma general del sistema: cómo se reparten las piezas y cómo se comunican. Antes de verlos uno por uno, el capítulo plantea la gran división entre monolitos y sistemas distribuidos.</p>
+        <ul class="reglas">
+          <li><strong>Gran bola de barro.</strong> La ausencia de estructura. Es lo que aparece si nadie piensa en la arquitectura, y es más común de lo que parece.</li>
+          <li><strong>Monolítico o distribuido.</strong> Un monolito se despliega como una sola unidad; uno distribuido, como varias que se comunican por red. Esta decisión condiciona todo lo demás.</li>
+          <li><strong>Las falacias de la computación distribuida.</strong> Ocho supuestos falsos: la red es fiable, la latencia es cero, el ancho de banda es infinito, la red es segura, la topología no cambia, hay un solo administrador, el transporte no cuesta y la red es homogénea.</li>
+          <li><strong>Otros costos de distribuir.</strong> Registros repartidos entre servicios, transacciones que ya no son atómicas y contratos entre servicios que hay que versionar.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c10">
+        <p class="etiqueta">Capítulo 10</p>
+        <h3>Arquitectura en capas</h3>
+        <p class="original">Layered Architecture Style</p>
+        <p class="idea">El estilo más conocido: el sistema se divide en capas técnicas apiladas, normalmente presentación, negocio, persistencia y base de datos. Es fácil de entender y suele ser el punto de partida por defecto.</p>
+        <ul class="reglas">
+          <li><strong>Capas cerradas.</strong> Una petición debe pasar por cada capa en orden, sin saltarse ninguna. Así se puede cambiar una capa sin tocar las demás (capas de aislamiento).</li>
+          <li><strong>Capas abiertas.</strong> A veces se permite saltar una capa, por ejemplo una capa de servicios compartidos. Debe ser una decisión explícita y documentada.</li>
+          <li><strong>Antipatrón del sumidero.</strong> Si la mayoría de las peticiones atraviesan capas que no hacen nada, solo pasar datos, el estilo no aporta y añade trabajo.</li>
+          <li><strong>Cuándo usarlo.</strong> Aplicaciones pequeñas o sencillas, con poco presupuesto o tiempo. Puntúa bajo en escalabilidad, elasticidad y tolerancia a fallos, porque todo se despliega junto.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque antes">
+            <p class="bloque-titulo">Se salta las capas</p>
+<pre><code>// presentacion/pedidosControlador.js
+app.get('/pedidos/:id', async (req, res) => {
+  const fila = await db.query('SELECT * FROM pedidos WHERE id = ?', [req.params.id]);
+  res.json(fila);
+});</code></pre>
+          </div>
+          <div class="bloque despues">
+            <p class="bloque-titulo">Capas cerradas</p>
+<pre><code>// presentación → negocio → persistencia
+app.get('/pedidos/:id', async (req, res) => {
+  const pedido = await servicioPedidos.obtener(req.params.id);
+  res.json(pedido);
+});</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c11">
+        <p class="etiqueta">Capítulo 11 <span class="nuevo">Nuevo en la 2.ª edición</span></p>
+        <h3>Monolito modular</h3>
+        <p class="original">The Modular Monolith Architecture</p>
+        <p class="idea">Un solo despliegue, pero organizado por dominios del negocio en lugar de por capas técnicas. Ofrece buena parte del orden de los microservicios sin el costo de la red.</p>
+        <ul class="reglas">
+          <li><strong>Módulos por dominio.</strong> Cada módulo (pedidos, pagos, inventario) contiene todo lo que necesita y expone una interfaz pública pequeña.</li>
+          <li><strong>Fronteras que hay que vigilar.</strong> Como todo está en el mismo código, es muy fácil que un módulo use el interior de otro. Las funciones de aptitud son la forma de impedirlo.</li>
+          <li><strong>Datos separados por módulo.</strong> Aunque la base de datos sea una, cada módulo debería tener sus propias tablas o esquema y no leer las de otros.</li>
+          <li><strong>Buen punto de partida.</strong> Es más simple y barato que un sistema distribuido. Si un día un módulo necesita escalar aparte, ya está bien delimitado para sacarlo como servicio.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque antes">
+            <p class="bloque-titulo">Entra al interior de otro módulo</p>
+<pre><code>// modulos/facturacion/servicio.js
+import { tablaPedidos } from '../pedidos/interno/repositorio.js';</code></pre>
+          </div>
+          <div class="bloque despues">
+            <p class="bloque-titulo">Usa su interfaz pública</p>
+<pre><code>// modulos/pedidos/index.js: la única puerta del módulo
+export { obtenerPedido } from './interno/servicio.js';
+
+// modulos/facturacion/servicio.js
+import { obtenerPedido } from '../pedidos/index.js';</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c12">
+        <p class="etiqueta">Capítulo 12</p>
+        <h3>Arquitectura de tubería</h3>
+        <p class="original">Pipeline Architecture Style</p>
+        <p class="idea">También llamada de tuberías y filtros: los datos pasan por una cadena de pasos independientes, cada uno con una sola tarea. Es la idea detrás de los comandos encadenados de Unix y de muchos procesos de transformación de datos.</p>
+        <ul class="reglas">
+          <li><strong>Cuatro tipos de filtro.</strong> Productor (origen de los datos), transformador (los cambia), comprobador (decide si siguen) y consumidor (el destino final).</li>
+          <li><strong>Las tuberías van en un solo sentido.</strong> Cada filtro recibe datos, hace su trabajo y los pasa al siguiente, sin conocer al resto.</li>
+          <li><strong>Fortalezas.</strong> Simple, barato y modular: se puede agregar o reordenar filtros sin tocar los demás.</li>
+          <li><strong>Debilidades.</strong> Al ser normalmente un monolito, escala y tolera fallos tan poco como el estilo en capas.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque">
+            <p class="bloque-titulo">Ejemplo</p>
+<pre><code>const leerLineas = (texto) => texto.split('\n');              // productor
+const quitarVacias = (lineas) => lineas.filter(Boolean);       // comprobador
+const aRegistros = (lineas) => lineas.map(convertirEnRegistro); // transformador
+const guardar = (registros) => db.insertarVarios(registros);   // consumidor
+
+const ejecutarTuberia = (entrada, filtros) =>
+  filtros.reduce((datos, filtro) => filtro(datos), entrada);
+
+ejecutarTuberia(archivo, [leerLineas, quitarVacias, aRegistros, guardar]);</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c13">
+        <p class="etiqueta">Capítulo 13</p>
+        <h3>Arquitectura de microkernel</h3>
+        <p class="original">Microkernel Architecture Style</p>
+        <p class="idea">Un núcleo mínimo con la funcionalidad básica, al que se le enchufan complementos (plug-ins) que agregan o cambian comportamiento. Es el estilo de los editores de código y los navegadores con extensiones.</p>
+        <ul class="reglas">
+          <li><strong>Núcleo pequeño y estable.</strong> Contiene solo lo imprescindible y cambia poco.</li>
+          <li><strong>Complementos independientes.</strong> Cada uno resuelve una variación. Entre ellos no deberían depender unos de otros.</li>
+          <li><strong>Registro y contratos.</strong> El núcleo sabe qué complementos hay mediante un registro, y se comunica con ellos a través de un contrato común.</li>
+          <li><strong>Cuándo usarlo.</strong> Productos que se instalan con distinta configuración para cada cliente, o reglas de negocio que varían mucho, como reclamaciones de seguros por región.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque">
+            <p class="bloque-titulo">Ejemplo</p>
+<pre><code>// nucleo/registro.js
+const complementos = new Map();
+
+export function registrar(region, complemento) {
+  complementos.set(region, complemento);
+}
+
+export function evaluarReclamacion(reclamacion) {
+  const complemento = complementos.get(reclamacion.region);
+  return complemento ? complemento.evaluar(reclamacion) : evaluarPorDefecto(reclamacion);
+}
+
+// complementos/antioquia.js
+registrar('antioquia', { evaluar: (reclamacion) => reclamacion.monto &lt;= LIMITE_ANTIOQUIA });</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c14">
+        <p class="etiqueta">Capítulo 14</p>
+        <h3>Arquitectura basada en servicios</h3>
+        <p class="original">Service-Based Architecture Style</p>
+        <p class="idea">Un estilo distribuido pragmático: una interfaz de usuario, unos pocos servicios grandes por dominio (normalmente entre 4 y 12) y, con frecuencia, una base de datos compartida.</p>
+        <ul class="reglas">
+          <li><strong>Servicios de grano grueso.</strong> Cada servicio cubre un dominio entero, como «pedidos», no una función pequeña.</li>
+          <li><strong>Transacciones sencillas.</strong> Como cada operación suele quedarse dentro de un servicio, se pueden usar transacciones normales de la base de datos.</li>
+          <li><strong>Variantes.</strong> Se puede partir la interfaz de usuario o la base de datos según lo que necesite cada dominio.</li>
+          <li><strong>Buen equilibrio.</strong> Da muchas ventajas de lo distribuido (despliegue separado, tolerancia a fallos) sin la complejidad de los microservicios. Suele ser una buena elección por defecto para pasar de un monolito a algo distribuido.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c15">
+        <p class="etiqueta">Capítulo 15</p>
+        <h3>Arquitectura dirigida por eventos</h3>
+        <p class="original">Event-Driven Architecture Style</p>
+        <p class="idea">Los componentes reaccionan a eventos (algo que ya pasó) de forma asíncrona, en lugar de llamarse unos a otros y esperar respuesta. Esta edición revisa a fondo el capítulo.</p>
+        <ul class="reglas">
+          <li><strong>Topología de broker.</strong> Cada componente publica eventos y otros reaccionan, sin coordinador central. Escala muy bien, pero nadie controla el flujo completo.</li>
+          <li><strong>Topología de mediador.</strong> Un mediador coordina los pasos de un proceso. Da control y manejo de errores, a cambio de más acoplamiento.</li>
+          <li><strong>Lo asíncrono cambia todo.</strong> Mejora el rendimiento y la tolerancia a fallos, pero hay que pensar en errores, en mensajes perdidos y en el orden de llegada.</li>
+          <li><strong>Evento frente a petición.</strong> Si necesitas una respuesta segura y al momento, usa una petición. Si solo informas de que algo pasó, usa un evento.</li>
+          <li><strong>Costos.</strong> Es más difícil de probar, de depurar y de mantener consistente que un sistema síncrono.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque antes">
+            <p class="bloque-titulo">Llamadas directas</p>
+<pre><code>async function realizarPedido(pedido) {
+  await pagos.cobrar(pedido);
+  await inventario.reservar(pedido);
+  await notificaciones.enviarConfirmacion(pedido);
+}</code></pre>
+          </div>
+          <div class="bloque despues">
+            <p class="bloque-titulo">Topología de broker</p>
+<pre><code>async function realizarPedido(pedido) {
+  await repositorioPedidos.guardar(pedido);
+  await broker.publicar('pedido.creado', { id: pedido.id, total: pedido.total });
+}
+// Pagos, inventario y notificaciones se suscriben a 'pedido.creado' por su cuenta</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c16">
+        <p class="etiqueta">Capítulo 16</p>
+        <h3>Arquitectura basada en espacio</h3>
+        <p class="original">Space-Based Architecture Style</p>
+        <p class="idea">Pensada para cargas enormes y muy variables. Elimina la base de datos del camino crítico: los datos viven en memoria, replicados entre unidades de procesamiento, y se guardan en la base de datos de forma asíncrona.</p>
+        <ul class="reglas">
+          <li><strong>Unidades de procesamiento.</strong> Cada una tiene la lógica y una copia de los datos en memoria. Se agregan o quitan según la demanda.</li>
+          <li><strong>Middleware virtualizado.</strong> Gestiona los mensajes, la réplica de datos entre unidades, el procesamiento distribuido y el despliegue de nuevas unidades.</li>
+          <li><strong>Bombas de datos.</strong> Envían los cambios a la base de datos de forma asíncrona, fuera del camino de la petición.</li>
+          <li><strong>Cuándo usarlo.</strong> Venta de entradas para conciertos o subastas en línea: picos enormes y repentinos. Es caro y complejo, y puede haber choques cuando dos unidades cambian el mismo dato.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c17">
+        <p class="etiqueta">Capítulo 17</p>
+        <h3>Arquitectura orientada a servicios con orquestación</h3>
+        <p class="original">Orchestration-Driven Service-Oriented Architecture</p>
+        <p class="idea">El estilo SOA de los años 2000: servicios organizados por capas técnicas y coordinados por un bus de servicios empresarial (ESB). Hoy se estudia sobre todo como lección de historia.</p>
+        <ul class="reglas">
+          <li><strong>Taxonomía de servicios.</strong> Servicios de negocio, servicios empresariales reutilizables, servicios de aplicación e infraestructura, con un motor de orquestación en el centro.</li>
+          <li><strong>El sueño de la reutilización.</strong> La idea era escribir cada concepto una sola vez y reutilizarlo en toda la empresa.</li>
+          <li><strong>El problema.</strong> Tanta reutilización creó un acoplamiento enorme: un cambio en un servicio compartido afectaba a todo. Además, un proceso de negocio quedaba repartido entre muchas capas.</li>
+          <li><strong>La lección.</strong> La reutilización tiene un costo en acoplamiento. Los microservicios nacieron, en parte, como reacción a esto.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c18">
+        <p class="etiqueta">Capítulo 18</p>
+        <h3>Arquitectura de microservicios</h3>
+        <p class="original">Microservices Architecture</p>
+        <p class="idea">Servicios pequeños, cada uno alrededor de un contexto delimitado del dominio, con sus propios datos y desplegables por separado. Esta edición revisa a fondo el capítulo.</p>
+        <ul class="reglas">
+          <li><strong>Contexto delimitado.</strong> Idea de Domain-Driven Design: cada servicio es dueño de un área del negocio, incluidos sus datos. Se prefiere duplicar antes que acoplar.</li>
+          <li><strong>Granularidad.</strong> El error más común es hacerlos demasiado pequeños. El tamaño lo marcan el propósito, las transacciones y cuánto se comunican.</li>
+          <li><strong>Datos aislados.</strong> Ningún servicio lee la base de datos de otro. Si necesita sus datos, se los pide o mantiene una copia propia.</li>
+          <li><strong>Coreografía u orquestación.</strong> Los servicios pueden coordinarse reaccionando a eventos entre ellos o con un orquestador. Las transacciones entre servicios se resuelven con sagas.</li>
+          <li><strong>Reutilización operativa.</strong> Registros, seguridad y monitoreo se comparten con un sidecar o una malla de servicios, no con librerías de negocio compartidas.</li>
+          <li><strong>Costos.</strong> Escala y evoluciona muy bien, pero pierde rendimiento en la red y es complejo de operar.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque antes">
+            <p class="bloque-titulo">Lee la base de datos de otro servicio</p>
+<pre><code>// servicio de envíos
+const cliente = await db.query('SELECT direccion FROM clientes WHERE id = ?', [id]);</code></pre>
+          </div>
+          <div class="bloque despues">
+            <p class="bloque-titulo">Le pregunta al dueño de los datos</p>
+<pre><code>// servicio de envíos
+const respuesta = await fetch(`${URL_SERVICIO_CLIENTES}/clientes/${id}`);
+const cliente = await respuesta.json();</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c19">
+        <p class="etiqueta">Capítulo 19</p>
+        <h3>Elegir el estilo adecuado</h3>
+        <p class="original">Choosing the Appropriate Architecture Style</p>
+        <p class="idea">No existe el mejor estilo, solo el más adecuado para un contexto concreto. El capítulo propone criterios para decidir y aplica el proceso a un caso de ejemplo.</p>
+        <ul class="reglas">
+          <li><strong>Las modas cambian.</strong> Los estilos aparecen como respuesta a los problemas del anterior y a la tecnología disponible. Elige por tu contexto, no por moda.</li>
+          <li><strong>Criterios de decisión.</strong> El dominio, las características prioritarias, la arquitectura de datos, la organización y los equipos, y la madurez operativa (por ejemplo, si hay DevOps).</li>
+          <li><strong>Primera pregunta: ¿uno o varios cuantos?</strong> Si todo el sistema necesita las mismas características, un monolito suele bastar. Si hay partes con necesidades muy distintas, conviene distribuir.</li>
+          <li><strong>Segunda: ¿dónde viven los datos?</strong> En un monolito, en una base compartida. En lo distribuido, hay que decidir qué servicio es dueño de cada dato.</li>
+          <li><strong>Tercera: ¿síncrono o asíncrono?</strong> Usa lo síncrono por defecto y lo asíncrono cuando haga falta, porque añade complejidad.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c20">
+        <p class="etiqueta">Capítulo 20 <span class="nuevo">Nuevo en la 2.ª edición</span></p>
+        <h3>Patrones de arquitectura</h3>
+        <p class="original">Architectural Patterns</p>
+        <p class="idea">Los estilos describen la forma general del sistema; los patrones resuelven problemas concretos dentro de él y se combinan con cualquier estilo.</p>
+        <ul class="reglas">
+          <li><strong>Estilo frente a patrón.</strong> Un estilo es la forma del sistema completo; un patrón es una solución reutilizable a un problema recurrente, como coordinar servicios o compartir funcionalidad.</li>
+          <li><strong>Patrones de comunicación.</strong> Orquestación (un coordinador dirige los pasos) frente a coreografía (cada parte reacciona por su cuenta), cada uno con sus compromisos.</li>
+          <li><strong>Patrones de reutilización.</strong> Cómo compartir funcionalidad entre servicios sin acoplarlos: librerías compartidas, un servicio compartido o un sidecar.</li>
+          <li><strong>Elegir patrones también es un compromiso.</strong> Cada patrón resuelve un problema y añade otro. Se eligen con el mismo análisis que los estilos.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- Parte III -->
+  <section class="parte" aria-labelledby="parte-3">
+    <h2 class="parte-titulo" id="parte-3">Parte III · Técnicas y habilidades blandas</h2>
+    <div class="capitulos">
+
+      <article class="capitulo" id="c21">
+        <p class="etiqueta">Capítulo 21</p>
+        <h3>Decisiones de arquitectura</h3>
+        <p class="original">Architectural Decisions</p>
+        <p class="idea">Tomar buenas decisiones y dejarlas documentadas es una de las tareas centrales del arquitecto. El capítulo describe los errores típicos y una forma ligera de registrarlas.</p>
+        <ul class="reglas">
+          <li><strong>Antipatrón «cubrirse las espaldas».</strong> No decidir por miedo a equivocarse. Decide en el último momento responsable y colabora con los desarrolladores.</li>
+          <li><strong>Antipatrón «día de la marmota».</strong> La misma decisión se discute una y otra vez porque nadie anotó por qué se tomó. Documenta el porqué, no solo el qué.</li>
+          <li><strong>Antipatrón «arquitectura por correo».</strong> Las decisiones se pierden en hilos de correo. Guárdalas en un único lugar y enlázalo.</li>
+          <li><strong>Qué es significativo.</strong> Una decisión es de arquitectura si afecta a la estructura, a las características, a las dependencias, a las interfaces o a las técnicas de construcción.</li>
+          <li><strong>Registros de decisiones (ADR).</strong> Un documento corto por decisión: título, estado, contexto, decisión, consecuencias y cómo se comprobará que se cumple.</li>
+        </ul>
+        <div class="ejemplo">
+          <div class="bloque">
+            <p class="bloque-titulo">Ejemplo de ADR</p>
+<pre><code># ADR 007: Enviar las notificaciones por una cola
+
+Estado: Aceptada
+
+## Contexto
+El envío de correos tarda hasta 3 s y retrasa la confirmación del pedido.
+
+## Decisión
+Al crear un pedido se publica un mensaje en una cola; un proceso aparte envía el correo.
+
+## Consecuencias
++ La confirmación del pedido responde en menos de 300 ms.
+- El correo puede llegar unos segundos después.
+- Hay que vigilar los mensajes que fallan.
+
+## Cumplimiento
+Una prueba de arquitectura impide usar el cliente de correo desde el módulo de pedidos.</code></pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c22">
+        <p class="etiqueta">Capítulo 22</p>
+        <h3>Analizar el riesgo de la arquitectura</h3>
+        <p class="original">Analyzing Architecture Risk</p>
+        <p class="idea">Toda arquitectura tiene riesgos. El capítulo propone una forma simple de calificarlos y una dinámica de equipo, el risk storming, para encontrarlos antes de que aparezcan en producción.</p>
+        <ul class="reglas">
+          <li><strong>Matriz de riesgo.</strong> Califica el impacto y la probabilidad de 1 a 3 y multiplícalos: de 1 a 2 es bajo, de 3 a 4 medio y de 6 a 9 alto. Mide primero el impacto.</li>
+          <li><strong>Evaluación por áreas.</strong> Una tabla que cruza las características (escalabilidad, disponibilidad, seguridad…) con las partes del sistema y marca el riesgo de cada cruce.</li>
+          <li><strong>Risk storming.</strong> Primero, cada persona identifica riesgos por separado sobre el diagrama; después, el grupo llega a un consenso; al final, se proponen formas de reducirlos.</li>
+          <li><strong>Los riesgos cambian.</strong> Repite el análisis cuando cambie la arquitectura y compara para ver si el riesgo mejora o empeora.</li>
+        </ul>
+        <div class="tabla-envoltura">
+          <table class="matriz">
+            <caption>Matriz de riesgo: impacto por probabilidad</caption>
+            <thead>
+              <tr><th scope="col">Impacto \ Probabilidad</th><th scope="col">Baja (1)</th><th scope="col">Media (2)</th><th scope="col">Alta (3)</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Alto (3)</th><td class="medio">3</td><td class="alto">6</td><td class="alto">9</td></tr>
+              <tr><th scope="row">Medio (2)</th><td class="bajo">2</td><td class="medio">4</td><td class="alto">6</td></tr>
+              <tr><th scope="row">Bajo (1)</th><td class="bajo">1</td><td class="bajo">2</td><td class="medio">3</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="capitulo" id="c23">
+        <p class="etiqueta">Capítulo 23</p>
+        <h3>Diagramar la arquitectura</h3>
+        <p class="original">Diagramming Architecture</p>
+        <p class="idea">Una arquitectura que nadie entiende no se puede construir. Los diagramas y las presentaciones son herramientas de trabajo del arquitecto, y el capítulo da pautas para hacerlos bien.</p>
+        <ul class="reglas">
+          <li><strong>Consistencia de representación.</strong> Antes de hacer zoom en una parte, muestra dónde encaja en el conjunto.</li>
+          <li><strong>Estándares.</strong> UML, el modelo C4 (contexto, contenedores, componentes y código) y ArchiMate. Usa uno conocido o define una leyenda propia.</li>
+          <li><strong>Pautas.</strong> Título en cada diagrama, flechas con dirección, formas y colores con significado constante, etiquetas en cada elemento y una leyenda.</li>
+          <li><strong>Empieza con trazos sencillos.</strong> Si inviertes horas en un diagrama bonito demasiado pronto, te costará cambiarlo (apego irracional al artefacto).</li>
+          <li><strong>Presentar.</strong> Revela la información por partes, en lugar de llenar las diapositivas de viñetas, y distingue una presentación hablada de un documento para leer.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c24">
+        <p class="etiqueta">Capítulo 24</p>
+        <h3>Hacer eficaces a los equipos</h3>
+        <p class="original">Making Teams Effective</p>
+        <p class="idea">El arquitecto no solo diseña: también crea el marco en el que trabaja el equipo. Demasiado control ahoga al equipo; muy poco lo deja sin rumbo.</p>
+        <ul class="reglas">
+          <li><strong>Tres perfiles.</strong> El controlador, que decide hasta los detalles; el arquitecto de sillón, que se desentiende; y el eficaz, que pone límites claros y ayuda dentro de ellos.</li>
+          <li><strong>Liderazgo elástico.</strong> Cuánto control ejercer depende de lo que el equipo se conoce, de su tamaño y experiencia, y de la complejidad y la duración del proyecto.</li>
+          <li><strong>Señales de alerta.</strong> Pérdida de proceso (más gente no rinde más), ignorancia pluralista (todos callan por creer que los demás están de acuerdo) y difusión de la responsabilidad.</li>
+          <li><strong>Listas de chequeo.</strong> Útiles para tareas con pasos que se olvidan (terminar código, pruebas, lanzamientos), no para todo.</li>
+          <li><strong>Topologías de equipo.</strong> Equipos alineados con un flujo de valor, de plataforma, facilitadores y de subsistemas complejos. La forma de los equipos afecta a la arquitectura.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c25">
+        <p class="etiqueta">Capítulo 25</p>
+        <h3>Negociación y liderazgo</h3>
+        <p class="original">Negotiation and Leadership Skills</p>
+        <p class="idea">Casi todas las decisiones de arquitectura generan desacuerdo con alguien. Saber negociar y liderar es tan importante como saber de tecnología.</p>
+        <ul class="reglas">
+          <li><strong>Con el negocio.</strong> Escucha cómo hablan para entender lo que de verdad necesitan, reúne datos antes de negociar y, como último recurso, explica las opciones en tiempo y dinero.</li>
+          <li><strong>Con otros arquitectos.</strong> Una demostración convence más que una discusión: una prueba de concepto vale más que diez reuniones.</li>
+          <li><strong>Con los desarrolladores.</strong> Explica siempre el porqué. Mejor aún, guíalos para que lleguen ellos mismos a la solución.</li>
+          <li><strong>Las cuatro C.</strong> Comunicación, colaboración, claridad y concisión. Lo complejo no impresiona; lo claro, sí.</li>
+          <li><strong>Pragmático y visionario.</strong> Ten una visión a largo plazo, pero sin perder de vista las restricciones reales de hoy.</li>
+          <li><strong>Lidera con el ejemplo.</strong> El respeto se gana integrándote con el equipo y ayudando a resolver problemas, no por el cargo.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c26">
+        <p class="etiqueta">Capítulo 26 <span class="nuevo">Nuevo en la 2.ª edición</span></p>
+        <h3>Intersecciones de la arquitectura</h3>
+        <p class="original">Architectural Intersections</p>
+        <p class="idea">La arquitectura no vive aislada: se cruza con la implementación, la infraestructura, los datos, la organización de los equipos y las herramientas nuevas, incluida la IA generativa. Si no se alinean, la arquitectura falla aunque el diseño sea bueno.</p>
+        <ul class="reglas">
+          <li><strong>Con la implementación.</strong> El código debe reflejar la arquitectura. Si el diseño dice microservicios y el código comparte tablas, la arquitectura real es otra.</li>
+          <li><strong>Con la infraestructura y las operaciones.</strong> La elasticidad o la disponibilidad dependen tanto de la infraestructura como del diseño.</li>
+          <li><strong>Con los datos.</strong> La forma de los datos (una base compartida o una por servicio) condiciona qué estilos son posibles.</li>
+          <li><strong>Con los equipos.</strong> La ley de Conway vuelve a aparecer: la organización tiene que encajar con la arquitectura.</li>
+          <li><strong>Con la IA generativa.</strong> Las herramientas de IA cambian cómo se escribe y se analiza el software, y la arquitectura debe tenerlo en cuenta.</li>
+        </ul>
+      </article>
+
+      <article class="capitulo" id="c27">
+        <p class="etiqueta">Capítulo 27</p>
+        <h3>Las leyes de la arquitectura de software, revisadas</h3>
+        <p class="original">The Laws of Software Architecture, Revisited</p>
+        <p class="idea">El libro cierra volviendo a sus leyes y mostrando cómo aparecen en cada capítulo.</p>
+        <ul class="reglas">
+          <li><strong>Todo es un compromiso.</strong> Cada estilo, patrón y decisión gana algo y pierde algo. El trabajo del arquitecto es ver qué se pierde.</li>
+          <li><strong>El porqué importa más que el cómo.</strong> Una decisión sin su razón documentada se pierde o se repite.</li>
+          <li><strong>Las decisiones casi nunca son blanco o negro.</strong> Suelen estar en un punto entre dos extremos, como más o menos acoplamiento, o más o menos consistencia. La pregunta es dónde situarse en ese espectro.</li>
+          <li><strong>El análisis nunca termina.</strong> El contexto cambia, así que la arquitectura necesita revisarse continuamente.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- Lista de chequeo -->
+  <section class="chequeo" id="chequeo" aria-labelledby="titulo-chequeo">
+    <div class="chequeo-cabecera">
+      <h2 id="titulo-chequeo">Lista de chequeo</h2>
+      <span class="progreso" id="progreso" aria-live="polite">0 de 0</span>
+    </div>
+    <p class="nota" style="margin-top:.75rem">Para revisar un diseño antes de construirlo. Las marcas se guardan solo en este navegador.</p>
+
+    <div class="grupo">
+      <h3 class="grupo-titulo">Características</h3>
+      <ul>
+        <li><label><input type="checkbox" id="ch-caract-1"><span>Traduje las preocupaciones del negocio a características concretas.</span></label></li>
+        <li><label><input type="checkbox" id="ch-caract-2"><span>Elegí con el negocio las tres características más importantes.</span></label></li>
+        <li><label><input type="checkbox" id="ch-caract-3"><span>Cada característica tiene una forma de medirse.</span></label></li>
+        <li><label><input type="checkbox" id="ch-caract-4"><span>Las características críticas tienen una función de aptitud automática.</span></label></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <h3 class="grupo-titulo">Estructura</h3>
+      <ul>
+        <li><label><input type="checkbox" id="ch-estruc-1"><span>Sé cuántos cuantos tiene el sistema y por qué.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estruc-2"><span>Los componentes salen de los flujos del negocio, no de las tablas.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estruc-3"><span>La partición (técnica o por dominio) es una decisión explícita.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estruc-4"><span>Ningún módulo o servicio usa el interior ni la base de datos de otro.</span></label></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <h3 class="grupo-titulo">Estilo</h3>
+      <ul>
+        <li><label><input type="checkbox" id="ch-estilo-1"><span>Elegí el estilo por mis características, no por moda.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estilo-2"><span>Si es distribuido, revisé las falacias de la red.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estilo-3"><span>Uso comunicación asíncrona solo donde aporta.</span></label></li>
+        <li><label><input type="checkbox" id="ch-estilo-4"><span>Sé qué pierdo con el estilo elegido.</span></label></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <h3 class="grupo-titulo">Decisiones y riesgos</h3>
+      <ul>
+        <li><label><input type="checkbox" id="ch-decis-1"><span>Cada decisión importante tiene un ADR con su porqué.</span></label></li>
+        <li><label><input type="checkbox" id="ch-decis-2"><span>Los ADR están en un solo lugar que todos conocen.</span></label></li>
+        <li><label><input type="checkbox" id="ch-decis-3"><span>Hice un análisis de riesgos y sé cuáles son altos.</span></label></li>
+      </ul>
+    </div>
+
+    <div class="grupo">
+      <h3 class="grupo-titulo">Comunicación y equipo</h3>
+      <ul>
+        <li><label><input type="checkbox" id="ch-equipo-1"><span>Hay un diagrama de contexto y otro de contenedores con leyenda.</span></label></li>
+        <li><label><input type="checkbox" id="ch-equipo-2"><span>El equipo entiende la arquitectura y participó en las decisiones.</span></label></li>
+        <li><label><input type="checkbox" id="ch-equipo-3"><span>La organización de los equipos encaja con la arquitectura.</span></label></li>
+      </ul>
+    </div>
+
+    <p style="margin-top:1.25rem"><button type="button" class="boton" id="desmarcar">Desmarcar todo</button></p>
+  </section>
+
+  <footer class="cierre">
+    <p><strong>En una línea:</strong> en arquitectura no hay respuestas correctas, solo compromisos bien entendidos y bien explicados.</p>
+    <p class="nota">Resumen y ejemplos propios, escritos sin citar el libro. Para el detalle completo, consulta el original.</p>
+  </footer>
+</main>
+
+<script>
+// Lista de chequeo: progreso y marcas guardadas en este navegador
+(function () {
+  'use strict';
+  const CLAVE_ALMACEN = 'fundamentos-arquitectura-chequeo';
+  const casillas = Array.from(document.querySelectorAll('.chequeo input[type="checkbox"]'));
+  const progreso = document.getElementById('progreso');
+  const botonDesmarcar = document.getElementById('desmarcar');
+
+  // Lee las marcas guardadas y descarta lo que no sea un objeto válido
+  function leerMarcas() {
+    try {
+      const marcas = JSON.parse(localStorage.getItem(CLAVE_ALMACEN));
+      return marcas && typeof marcas === 'object' && !Array.isArray(marcas) ? marcas : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function guardarMarcas() {
+    const marcas = {};
+    casillas.forEach((casilla) => {
+      if (casilla.checked) marcas[casilla.id] = true;
+    });
+    try {
+      localStorage.setItem(CLAVE_ALMACEN, JSON.stringify(marcas));
+    } catch (error) {
+      console.error('No se pudieron guardar las marcas', error);
+    }
+  }
+
+  function actualizarProgreso() {
+    const marcadas = casillas.filter((casilla) => casilla.checked).length;
+    progreso.textContent = marcadas + ' de ' + casillas.length;
+    botonDesmarcar.disabled = marcadas === 0;
+  }
+
+  const marcas = leerMarcas();
+  casillas.forEach((casilla) => {
+    casilla.checked = marcas[casilla.id] === true;
+    casilla.addEventListener('change', () => {
+      guardarMarcas();
+      actualizarProgreso();
+    });
+  });
+
+  botonDesmarcar.addEventListener('click', () => {
+    casillas.forEach((casilla) => { casilla.checked = false; });
+    guardarMarcas();
+    actualizarProgreso();
+  });
+
+  actualizarProgreso();
+})();
+</script>
+</body>
+</html>
